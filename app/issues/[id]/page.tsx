@@ -1,31 +1,52 @@
-import { IssueStatusBadge } from "@/app/components";
+
 import prisma from "@/prisma/client";
-import { Box, Button, Card, Flex, Grid, Heading } from "@radix-ui/themes";
+import { Box, Flex, Grid } from "@radix-ui/themes";
 import { notFound } from "next/navigation";
-import React from "react";
+import React, { cache } from "react";
 
 import EditIssueButton from "./EditIssueButton";
 import IssueDetails from "./issueDetails";
+import DeleteIssueButton from "./DeleteIssueButton";
+import { getServerSession } from "next-auth";
+import AssigneeSelect from "./AssigneeSelect";
+
+
 interface Props {
   params: { id: string };
 }
+const fetchUser = cache((issueId: number) => prisma.issue.findUnique({ where: { id: issueId }}));
 const IssueDetailsPage = async ({ params }: Props) => {
+
   // if (typeof params.id !== 'number')  notFound();
+ const session= await getServerSession()
   const issue = await prisma.issue.findUnique({
     where: { id: parseInt(params.id) },
   });
 
   if (!issue) notFound();
   return (
-    <Grid columns={{ initial: "1", md: "2" }} gap="5">
+    <Grid columns={{ initial: '1', sm: '5' }} gap="5">
+    <Box className="md:col-span-4">
+      <IssueDetails issue={issue} />
+    </Box>
+    {session && (
       <Box>
-      <IssueDetails issue={issue}/>
+        <Flex direction="column" gap="4">
+          <AssigneeSelect issue={issue} />
+          <EditIssueButton issueId={issue.id} />
+          <DeleteIssueButton issueId={issue.id} />
+        </Flex>
       </Box>
-      <Box>
-        <EditIssueButton issueId={issue.id}/>
-      </Box>
-    </Grid>
+    )}
+  </Grid>
   );
 };
+export async function generateMetadata({ params }: Props) {
+  const issue = await fetchUser(parseInt(params.id));
 
+  return {
+    title: issue?.title,
+    description: 'Details of issue ' + issue?.id
+  }
+}
 export default IssueDetailsPage;

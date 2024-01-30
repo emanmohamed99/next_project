@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+
 import { IssuseSchema } from "../../validationschema";
-const prisma = new PrismaClient();
+import prisma from "@/prisma/client";
+
+
 export async function POST(request: NextRequest) {
+   
   const body = await request.json();
   const validation = IssuseSchema.safeParse(body);
   if (!validation.success)

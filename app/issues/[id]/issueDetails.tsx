@@ -9,12 +9,12 @@ const IssueDetails = ({issue}:{issue:Issue}) => {
     <Box>
     <Heading>{issue.title}</Heading>
     <Flex className="space-x-3" my="2">
-      <IssueStatusBadge status={issue.states} />
+      <IssueStatusBadge status={issue.status} />
     </Flex>
-    <Card className="Prose">
+    <Card className="Prose max-w-full">
       <ReactMarkdown>{issue.description}</ReactMarkdown>
     </Card>
-    <p>{issue.status}</p>
+ 
     <p>{issue.createdAt.toDateString()}</p>
   </Box>
   )

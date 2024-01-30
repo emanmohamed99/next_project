@@ -5,7 +5,8 @@ import React, { useState } from "react";
 import "easymde/dist/easymde.min.css";
 import { TextField, Button, Callout ,Text} from "@radix-ui/themes";
 import { useForm, Controller } from "react-hook-form";
-import dynamic from "next/dynamic";
+
+
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import {zodResolver} from "@hookform/resolvers/zod"
@@ -14,6 +15,9 @@ import {z} from "zod"
 import ErrorMessage from "@/app/components/ErrorMessage";
 import Spinner from "@/app/components/Spinner";
 import { Issue } from "@prisma/client";
+import SimpleMDE from 'react-simplemde-editor';
+// import SimpleMDE from 'react-simple-code-editor';
+
 
 //   interface IssueForm {
 //     title: string;
@@ -24,7 +28,7 @@ interface Props{
 }
 const IssueForm = ({issue}:{issue?:Issue}) => {
     type IssueFormData= z.infer<typeof IssuseSchema>;
-    const SimpleMDE=dynamic(()=>import('react-simplemde-editor'),{ssr:false})
+  
    const router=useRouter()
      const { register, control, handleSubmit,formState:{errors} } = useForm<IssueFormData>({
        resolver:zodResolver(IssuseSchema)
@@ -43,8 +47,11 @@ const IssueForm = ({issue}:{issue?:Issue}) => {
   onSubmit={handleSubmit(async(data) => {
     try {
         setSubmitting(true)
-        await  axios.post('/api/issues',data)
-        router.push('/issues')  
+        if(issue)
+       await axios.patch('/api/issues/'+issue.id,data)
+       else await  axios.post('/api/issues',data)
+       router.push('/issues/list');
+        router.refresh()
     } catch (error) {
         setError('an expected error occurred')
      
@@ -57,14 +64,15 @@ const IssueForm = ({issue}:{issue?:Issue}) => {
   </TextField.Root>
   {errors.title && <ErrorMessage>{errors.title.message}</ErrorMessage>}
   <Controller
-    name="description"
-    control={control}
-    render={({ field }) => (
-      <SimpleMDE placeholder="Description" {...field} defaultValue={issue?.description} />
-    )}
-  />
+          name="description"
+          control={control}
+          defaultValue={issue?.description}
+          render={({ field }) => (
+            <SimpleMDE placeholder="Description" {...field} />
+          )}
+        />
 {errors.description && <ErrorMessage>{errors.description?.message}</ErrorMessage>}
-  <Button disabled={isSubmitting}>Submit New Issue {isSubmitting&&<Spinner/>}</Button>
+  {issue?'update Issue':'submit new issue'}{' '}<Button disabled={isSubmitting}>Submit New Issue {isSubmitting&&<Spinner/>}</Button>
 </form>
 </div>
   )

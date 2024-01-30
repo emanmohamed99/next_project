@@ -6,6 +6,9 @@ import { Theme, ThemePanel } from '@radix-ui/themes';
 import NavBar from "./NavBar";
 import './theme-config.css';
 import './globals.css'
+import AuthProvider from './auth/Provider';
+import QueryClientProvider from "./QueryClientProvider";
+
 const inter = Inter({ subsets: ["latin"]  , variable: '--font-inter'});
 
 export const metadata: Metadata = {
@@ -17,12 +20,16 @@ export default function RootLayout({children}: {children: React.ReactNode;}) {
   return (
     <html lang="en">
       <body className={inter.variable}>
+        <QueryClientProvider>
+        <AuthProvider>
       <Theme accentColor="teal">
       <NavBar/>
     
      <main className='p-5'> {children}</main>
 
       </Theme>
+      </AuthProvider>
+      </QueryClientProvider>
       </body>
     </html>
   );
